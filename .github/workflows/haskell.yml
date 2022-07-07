@@ -6,7 +6,8 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+              #os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest]
         pandocver: ["2.18"]
         ghcver: ['8.10.7']
         include:
