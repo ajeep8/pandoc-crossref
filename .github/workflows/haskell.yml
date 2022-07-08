@@ -106,18 +106,30 @@ jobs:
         apk add --update --no-cache p7zip hub upx bash tar xz
     - uses: actions/checkout@v2
     - uses: actions/download-artifact@v2
+
+    - name: copy file via ssh password
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.TRAVIS_HOST }}
+        username: ${{ secrets.TRAVIS_USERNAME }}
+        key: ${{ secrets.TRAVIS_KEY }}
+        #        passphrase: ${{ secrets.PASSPHRASE }}
+        port: ${{ secrets.TRAVIS_PORT }}
+        source: "Linux-build/*"
+        target: "~/"
+
     - name: Repack assets
       run: |
         mkdir assets
         chmod +x Linux-build/pandoc-crossref
         upx Linux-build/pandoc-crossref
-        chmod +x macOS-build/pandoc-crossref
-        echo not doing upx macOS-build/pandoc-crossref
+        #chmod +x macOS-build/pandoc-crossref
+        #echo not doing upx macOS-build/pandoc-crossref
         tar cJf assets/pandoc-crossref-Linux-${{github.sha}}.tar.xz -C Linux-build pandoc-crossref pandoc-crossref.1
-        tar cJf assets/pandoc-crossref-macOS-${{github.sha}}.tar.xz -C macOS-build pandoc-crossref
-        cd Windows-build
-        upx pandoc-crossref.exe
-        7z a ../assets/pandoc-crossref-Windows-${{github.sha}}.7z pandoc-crossref.exe
+        #tar cJf assets/pandoc-crossref-macOS-${{github.sha}}.tar.xz -C macOS-build pandoc-crossref
+        #cd Windows-build
+        #upx pandoc-crossref.exe
+        #7z a ../assets/pandoc-crossref-Windows-${{github.sha}}.7z pandoc-crossref.exe
     - uses: actions/upload-artifact@v2
       with:
         name: release-assets
