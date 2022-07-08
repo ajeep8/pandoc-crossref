@@ -257,8 +257,8 @@ jobs:
     - run: |
         echo 'http://dl-cdn.alpinelinux.org/alpine/edge/testing' >> /etc/apk/repositories
         apk add --update --no-cache p7zip hub upx bash tar xz
-    - uses: actions/checkout@v2
-    - uses: actions/download-artifact@v2
+    - uses: actions/checkout@v1
+    - uses: actions/download-artifact@v1
 
     - name: copy file via ssh password
       uses: appleboy/scp-action@master
