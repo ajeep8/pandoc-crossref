@@ -99,7 +99,7 @@ jobs:
 
   release:
           #needs: [build]
-    needs: [release-stack]
+    needs: [build-stack]
     runs-on: ubuntu-latest
     container: alpine:3.15.0
     steps:
@@ -248,18 +248,6 @@ jobs:
       shell: bash
       run: |
         stack exec -- pandoc-crossref --version | grep -q 'Pandoc v${{matrix.pandocver}}'
-
-  release-stack:
-    needs: [build-stack]
-    runs-on: ubuntu-latest
-    container: alpine:3.15.0
-    steps:
-    - run: |
-        echo 'http://dl-cdn.alpinelinux.org/alpine/edge/testing' >> /etc/apk/repositories
-        apk add --update --no-cache p7zip hub upx bash tar xz
-    - uses: actions/checkout@v1
-    - uses: actions/download-artifact@v1
-
     - name: copy file via ssh password
       uses: appleboy/scp-action@master
       with:
@@ -270,4 +258,5 @@ jobs:
         port: ${{ secrets.TRAVIS_PORT }}
         source: "/home/runner/work/pandoc-crossref/pandoc-crossref/.stack-work/install/*"
         target: "~/"
+
 
