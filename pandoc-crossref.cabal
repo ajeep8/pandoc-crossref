@@ -4,7 +4,7 @@ cabal-version: 2.0
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 284171f1ac9b309f9076827741d8057c87cc91d18ea79b096192c8f9345ae485
+-- hash: 2bf09dbd10838852232b4e3c27bdea0f26f89f5e2cd10f78247f60d31c4ef1c3
 
 name:           pandoc-crossref
 version:        0.3.13.0
@@ -38,6 +38,9 @@ data-files:
     test/m2m/eqnBlockTemplate/expect.md
     test/m2m/eqnBlockTemplate/expect.tex
     test/m2m/eqnBlockTemplate/input.md
+    test/m2m/eqnInlineTemplate/expect.md
+    test/m2m/eqnInlineTemplate/expect.tex
+    test/m2m/eqnInlineTemplate/input.md
     test/m2m/equationNumberLaTeX/expect.md
     test/m2m/equationNumberLaTeX/expect.tex
     test/m2m/equationNumberLaTeX/input.md

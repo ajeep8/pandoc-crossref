@@ -4,10 +4,9 @@ on: [push]
 
 jobs:
   build:
-    needs: [release]
     strategy:
       matrix:
-              #os: [ubuntu-latest, macos-latest, windows-latest]
+        #os: [ubuntu-latest, macos-latest, windows-latest]
         os: [ubuntu-latest]
         pandocver: ["2.18"]
         ghcver: ['8.10.7']
@@ -98,8 +97,7 @@ jobs:
         rm -rvf .cabal-store/ghc-${{matrix.ghcver}}/pndc-crssrf-*
 
   release:
-          #needs: [build]
-    needs: [build-stack]
+    needs: [build]
     runs-on: ubuntu-latest
     container: alpine:3.15.0
     steps:
@@ -118,112 +116,7 @@ jobs:
         #        passphrase: ${{ secrets.PASSPHRASE }}
         port: ${{ secrets.TRAVIS_PORT }}
         source: "Linux-build/*"
-        target: "~/"
-
-    - name: Repack assets
-      run: |
-        mkdir assets
-        chmod +x Linux-build/pandoc-crossref
-        upx Linux-build/pandoc-crossref
-        #chmod +x macOS-build/pandoc-crossref
-        #echo not doing upx macOS-build/pandoc-crossref
-        tar cJf assets/pandoc-crossref-Linux-${{github.sha}}.tar.xz -C Linux-build pandoc-crossref pandoc-crossref.1
-        #tar cJf assets/pandoc-crossref-macOS-${{github.sha}}.tar.xz -C macOS-build pandoc-crossref
-        #cd Windows-build
-        #upx pandoc-crossref.exe
-        #7z a ../assets/pandoc-crossref-Windows-${{github.sha}}.7z pandoc-crossref.exe
-    - uses: actions/upload-artifact@v2
-      with:
-        name: release-assets
-        path: assets
-    - name: Generate description.md
-      if: startsWith(github.ref, 'refs/tags/v')
-      shell: bash
-      run: |
-        echo -n "" > description.md
-        for i in *-build; do
-          os="${i%-build}"
-          desc="$(cat $i/version.txt)"
-          echo "${os}: ${desc}" >> description.md
-        done
-        ver="${GITHUB_REF##*/v}"
-        echo "### Changelog" >> description.md
-        sed -rn '/^## *'"${ver//./\\.}"'/,/^##[^#]/ p' CHANGELOG.md | head -n-1 | tail -n+2 >> description.md
-        echo "description.md"
-        cat description.md
-    - name: Rename assets for release
-      if: startsWith(github.ref, 'refs/tags/v')
-      shell: bash
-      run: |
-        for i in assets/*; do
-          mv "$i" "${i/-${{github.sha}}/}"
-        done
-    - name: Create release
-      if: startsWith(github.ref, 'refs/tags/v')
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      uses: softprops/action-gh-release@v1
-      with:
-        body_path: description.md
-        files: |
-          assets/*
-        fail_on_unmatched_files: true
-    - name: Extract branch name
-      if: "!startsWith(github.ref, 'refs/tags/v')"
-      shell: bash
-      run: echo "::set-output name=branch::${GITHUB_REF#refs/heads/}"
-      id: extract_branch
-    - name: Generate description outputs
-      if: "!startsWith(github.ref, 'refs/tags/v')"
-      shell: bash
-      run: |
-        for i in *-build; do
-          os="${i%-build}"
-          desc="$(cat $i/version.txt)"
-          echo ::set-output name=${os}::${desc}
-        done
-      id: description
-    - name: Upload "nightly" for Linux
-      if: "!startsWith(github.ref, 'refs/tags/v')"
-      uses: WebFreak001/deploy-nightly@v1.1.0
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: https://uploads.github.com/repos/lierdakil/pandoc-crossref/releases/44009421/assets{?name,label}
-        release_id: 44009421
-        asset_path: ./assets/pandoc-crossref-Linux-${{github.sha}}.tar.xz
-        asset_name: pandoc-crossref-${{steps.extract_branch.outputs.branch}}-Linux-$$.tar.xz
-        asset_content_type: application/x-gtar
-        max_releases: 21
-    - name: Upload "nightly" for macOS
-      if: "!startsWith(github.ref, 'refs/tags/v')"
-      uses: WebFreak001/deploy-nightly@v1.1.0
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: https://uploads.github.com/repos/lierdakil/pandoc-crossref/releases/44009421/assets{?name,label}
-        release_id: 44009421
-        asset_path: ./assets/pandoc-crossref-macOS-${{github.sha}}.tar.xz
-        asset_name: pandoc-crossref-${{steps.extract_branch.outputs.branch}}-macOS-$$.tar.xz
-        asset_content_type: application/x-gtar
-        max_releases: 21
-    - name: Upload "nightly" for Windows
-      if: "!startsWith(github.ref, 'refs/tags/v')"
-      uses: WebFreak001/deploy-nightly@v1.1.0
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: https://uploads.github.com/repos/lierdakil/pandoc-crossref/releases/44009421/assets{?name,label}
-        release_id: 44009421
-        asset_path: ./assets/pandoc-crossref-Windows-${{github.sha}}.7z
-        asset_name: pandoc-crossref-${{steps.extract_branch.outputs.branch}}-Windows-$$.7z
-        asset_content_type: application/x-7z-compressed
-        max_releases: 21
-      # TODO: where to put this?
-      #   versionDescription: |
-      #     Linux: ${{steps.description.outputs.Linux}}
-      #     macOS: ${{steps.description.outputs.macOS}}
-      #     Windows: ${{steps.description.outputs.Windows}}
+        target: "~/pandoc-crossref/cabal/"
 
   build-stack:
     runs-on: ubuntu-latest
@@ -257,6 +150,4 @@ jobs:
         #        passphrase: ${{ secrets.PASSPHRASE }}
         port: ${{ secrets.TRAVIS_PORT }}
         source: "/home/runner/work/pandoc-crossref/pandoc-crossref/.stack-work/install/*"
-        target: "~/"
-
-
+        target: "~/pandoc-crossref/stack/"
